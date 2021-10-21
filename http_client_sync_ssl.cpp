@@ -3947,7 +3947,8 @@ int main(int argc, char** argv)
         auto const host = argv[1];
         auto const port = argv[2];
         auto const target = argv[3];
-        int version = argc == 5 && !std::strcmp("1.0", argv[4]) ? 10 : 11;
+        auto const env = argv[4];
+        int version = argc == 6 && !std::strcmp("1.0", argv[5]) ? 10 : 11;
 
         // The io_context is required for all I/O
         net::io_context ioc;
@@ -3982,12 +3983,22 @@ int main(int argc, char** argv)
 
         // Perform the SSL handshake
         stream.handshake(ssl::stream_base::client);
+        
+        std::cout << env << std::endl;
+        std::string param;
+        std::string defaultenv = "dev23";
+        if(defaultenv.compare(env) == 0) {
+                param = "?hardwareVersion=600&deviceId=801609000046&deviceId2=801609000046&deviceVersion=600&accountNumber=-9223372036389295225";
+        } else {
+                param = "?hardwareVersion=600&deviceId=706655FF7CA3&deviceId2=706655FF7CA3&deviceVersion=600&accountNumber=-9223372036573036302";
+        }
 
+        std::cout << target+param << std::endl;
         // Set up an HTTP GET request message
-        http::request<http::string_body> req{http::verb::get, target, version};
+        http::request<http::string_body> req{http::verb::post, target+param, version};
         req.set(http::field::host, host);
         req.set(http::field::user_agent, BOOST_BEAST_VERSION_STRING);
-
+        req.set(http::field::content_type, "application/x-www-form-urlencoded");
         // Send the HTTP request to the remote host
         http::write(stream, req);
 
