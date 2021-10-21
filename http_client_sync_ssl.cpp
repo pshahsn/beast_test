@@ -3985,17 +3985,21 @@ int main(int argc, char** argv)
         stream.handshake(ssl::stream_base::client);
         
         std::cout << env << std::endl;
-        std::string param;
+
         std::string defaultenv = "dev23";
+        std::string circle1 = "c1";
+        auto verb = http::verb::get;
         if(defaultenv.compare(env) == 0) {
-                param = "?hardwareVersion=600&deviceId=801609000046&deviceId2=801609000046&deviceVersion=600&accountNumber=-9223372036389295225";
-        } else {
-                param = "?hardwareVersion=600&deviceId=706655FF7CA3&deviceId2=706655FF7CA3&deviceVersion=600&accountNumber=-9223372036573036302";
+                verb = http::verb::post;
+                target = target + "?hardwareVersion=600&deviceId=801609000046&deviceId2=801609000046&deviceVersion=600&accountNumber=-9223372036389295225";
+        } else if (circle1.compare(env) == 0) {
+                verb = http::verb::post;
+                target = target + "?hardwareVersion=600&deviceId=706655FF7CA3&deviceId2=706655FF7CA3&deviceVersion=600&accountNumber=-9223372036573036302";
         }
 
-        std::cout << target+param << std::endl;
+        std::cout << target << std::endl;
         // Set up an HTTP GET request message
-        http::request<http::string_body> req{http::verb::post, target+param, version};
+        http::request<http::string_body> req{verb, target, version};
         req.set(http::field::host, host);
         req.set(http::field::user_agent, BOOST_BEAST_VERSION_STRING);
         req.set(http::field::content_type, "application/x-www-form-urlencoded");
@@ -4017,14 +4021,18 @@ int main(int argc, char** argv)
         // Gracefully close the stream
         beast::error_code ec;
         stream.shutdown(ec);
+        std::string closing = "closing the stream"
+        std::cout << closing << std::endl;
         if(ec == net::error::eof)
         {
             // Rationale:
             // http://stackoverflow.com/questions/25587403/boost-asio-ssl-async-shutdown-always-finishes-with-an-error
             ec = {};
         }
-        if(ec)
+        if(ec) {
+            std::cout << ec << std::endl;
             throw beast::system_error{ec};
+        }
 
         // If we get here then the connection is closed gracefully
     }
